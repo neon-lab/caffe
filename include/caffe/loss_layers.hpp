@@ -11,6 +11,8 @@
 #include "caffe/neuron_layers.hpp"
 #include "caffe/proto/caffe.pb.h"
 
+#include <boost/scoped_array.hpp>
+
 namespace caffe {
 
 const float kLOG_THRESHOLD = 1e-20;
@@ -384,6 +386,30 @@ class HingeLossLayer : public LossLayer<Dtype> {
    *   -# @f$ (N \times 1 \times 1 \times 1) @f$
    *      the labels -- ignored as we can't compute their error gradients
    */
+  virtual void Backward_cpu(const vector<Blob<Dtype>*>& top,
+      const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom);
+};
+
+// Cluster loss layer
+// Forces features to have high class separability
+template <typename Dtype>
+class ClusterLossLayer : public LossLayer<Dtype> {
+ public:
+  explicit ClusterLossLayer(const LayerParameter& param)
+      : LossLayer<Dtype>(param) {}
+
+  virtual inline const char* type() const { return "ClusterLoss"; }
+
+ private:
+    int data_vec_count;
+    boost::scoped_array<Dtype> data_dot_products;
+    Dtype get_data_dot_product(int r, int c);
+    void set_data_dot_product(int r, int c, Dtype v);
+
+ protected:
+  virtual void Forward_cpu(const vector<Blob<Dtype>*>& bottom,
+      const vector<Blob<Dtype>*>& top);
+
   virtual void Backward_cpu(const vector<Blob<Dtype>*>& top,
       const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom);
 };
