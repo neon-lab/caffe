@@ -351,6 +351,7 @@ message LayerParameter {
   optional TanHParameter tanh_param = 127;
   optional ThresholdParameter threshold_param = 128;
   optional WindowDataParameter window_data_param = 129;
+  optional LocalParameter local_param = 144;
 }
 
 // Message that stores parameters used to apply transformation
@@ -895,6 +896,17 @@ message WindowDataParameter {
   optional string root_folder = 13 [default = ""];
 }
 
+// Message that stores parameters used by LocalLayer
+message LocalParameter {
+  optional uint32 num_output = 1; // The number of outputs for the layer
+  optional bool bias_term = 2 [default = true]; // whether to have bias terms
+  optional uint32 pad = 3 [default = 0]; // The padding size
+  optional uint32 kernel_size = 4; // The kernel size
+  optional uint32 stride = 6 [default = 1]; // The stride
+  optional FillerParameter weight_filler = 7; // The filler for the weight
+  optional FillerParameter bias_filler = 8; // The filler for the bias
+}
+
 message SPPParameter {
   enum PoolMethod {
     MAX = 0;
@@ -942,6 +954,7 @@ message V1LayerParameter {
     IMAGE_DATA = 12;
     INFOGAIN_LOSS = 13;
     INNER_PRODUCT = 14;
+    LOCAL = 44;
     LRN = 15;
     MEMORY_DATA = 29;
     MULTINOMIAL_LOGISTIC_LOSS = 16;
@@ -1001,6 +1014,7 @@ message V1LayerParameter {
   optional WindowDataParameter window_data_param = 20;
   optional TransformationParameter transform_param = 36;
   optional LossParameter loss_param = 42;
+  optional LocalParameter local_param = 144;
   optional V0LayerParameter layer = 1;
 }
 
