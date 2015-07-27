@@ -12,6 +12,7 @@ namespace caffe {
 template <typename Dtype>
 void MapLossLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
     const vector<Blob<Dtype>*>& top) {
+    float lambda = this->layer_param_.map_loss_param().lambda();
     int num_el = bottom[0]->shape(0)*bottom[0]->shape(1)*bottom[0]->shape(2);
     const Dtype* data = bottom[0]->cpu_data();
     const Dtype* label = bottom[1]->cpu_data();
@@ -20,7 +21,8 @@ void MapLossLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
     // store loss in loss[0]
     loss[0] = 0;
     for (int i = 0; i < num_el; i++) {
-        loss[0] += pow(data[i], 1 - label[i]) * pow(1 - data[i], label[i]);
+        loss[0] += pow(data[i], 1 - label[i]) * pow(1 - data[i], label[i]) +
+                   0.5 * lambda * pow(data[i], 2);
     }
 }
 
@@ -31,13 +33,15 @@ void MapLossLayer<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>& top,
         LOG(FATAL) << this->type() << " Layer cannot backpropagate to label inputs.";
     }
     if (propagate_down[0]) {
+        float lambda = this->layer_param_.map_loss_param().lambda();
         int num_el = bottom[0]->shape(0)*bottom[0]->shape(1)*bottom[0]->shape(2);
         const Dtype* data = bottom[0]->cpu_data();
         const Dtype* label = bottom[1]->cpu_data();
         Dtype* bottom_diff = bottom[0]->mutable_cpu_diff();
         
         for (int i = 0; i < num_el; i++) {
-            bottom_diff[i] = - (pow(1 - data[i], label[i] - 1) / pow(data[i], label[i])) * (data[i] + label[i] - 1);
+            bottom_diff[i] = - (pow(1 - data[i], label[i] - 1) / pow(data[i], label[i])) * (data[i] + label[i] - 1)
+                             + lambda * data[i];
         }
     }
 }
