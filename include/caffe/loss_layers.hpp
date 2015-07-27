@@ -388,6 +388,21 @@ class HingeLossLayer : public LossLayer<Dtype> {
       const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom);
 };
 
+template <typename Dtype>
+class MapLossLayer : public LossLayer<Dtype> {
+ public:
+  explicit MapLossLayer(const LayerParameter& param)
+      : LossLayer<Dtype>(param) {}
+
+  virtual inline const char* type() const { return "MapLoss"; }
+
+ protected:
+  virtual void Forward_cpu(const vector<Blob<Dtype>*>& bottom,
+      const vector<Blob<Dtype>*>& top);
+  virtual void Backward_cpu(const vector<Blob<Dtype>*>& top,
+      const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom);
+};
+
 /**
  * @brief A generalization of MultinomialLogisticLossLayer that takes an
  *        "information gain" (infogain) matrix specifying the "value" of all label
